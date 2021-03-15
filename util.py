@@ -2,9 +2,9 @@ import re
 import pandas as pd
 
 ptn = r"-(.+[\d])"
-file_path = "C:\\Users\\bingjiunchen\\Downloads\\鈊象盤點表20200311.xlsx"
+file_path = "C:\\Users\\bingjiunchen\\Desktop\\明星3缺1_20200311_展開版.xlsm"
 
-table = "盤點表"
+table = "盤點表展開"
 
 
 def parse_list_name(list_name):
@@ -13,13 +13,17 @@ def parse_list_name(list_name):
 
 
 def read_xlsx(sheet: str):
-    arr = []
     row_data = pd.read_excel(file_path, sheet_name=sheet, engine="openpyxl")
-    # questions = row_data["原始問句"].array
-    #
-    # for i in range(len(questions)):
-    #     if type(questions[i]) == float:
-    #         continue
-    #     arr.append(questions[i])
-    # return arr
-    return row_data["原始問句"].array
+    row_arr = row_data["品檢問題填寫處"].array
+    return [i for i in row_arr if type(i) != float]
+
+
+# TODO
+def write_xlsx(row_list: list, sheet_name: str):
+    df = pd.DataFrame(row_list, columns=["answer"])
+    df.to_excel(file_path, sheet_name=sheet_name, index=False)
+
+
+# TODO
+def compare_response_with_answer():
+    return
