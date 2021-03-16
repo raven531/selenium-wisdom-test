@@ -19,15 +19,13 @@ def read_xlsx(sheet: str, row_name):
     return [i for i in row_arr if type(i) != float]
 
 
-def write_xlsx(row_list, sheet_name, col_name):
+def write_xlsx(row_list, sheet_name, col_name, col_pos):
     workbook = xlwings.Book(file_path)
     worksheet = workbook.sheets[sheet_name]
-    worksheet["N1"].options(pd.DataFrame, index=False).value = pd.DataFrame(
+    worksheet[col_pos].options(pd.DataFrame, index=False).value = pd.DataFrame(
         {col_name: row_list})
 
 
 # TODO
-def compare_response_with_answer(fp, sheet):
-    row_data = pd.read_excel(fp, sheet_name=sheet, engine="openpyxl")
-    row_arr = row_data["標準答案"].array
+def compare_response_with_answer(require, sheet_name: str, row_name: str):
     return
