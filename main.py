@@ -1,5 +1,4 @@
 import util
-import os
 
 from dotenv import load_dotenv
 from airtest_selenium.proxy import WebChrome
@@ -26,7 +25,8 @@ def run():
     items = lists.find_elements_by_tag_name("li")
 
     for item in items:
-        row_data = util.read_xlsx(sheet=util.parse_list_name(item.text))
+        title = item.text
+        row_data = util.read_xlsx(sheet=util.parse_list_name(item.text), row_name="品檢問題填寫處")
         item.click()
         driver.find_element_by_xpath("//input[@type='submit']").click()
         driver.find_element_by_xpath("//a[@href='/wise/wiseadm/test.jsp']").click()
@@ -42,21 +42,26 @@ def run():
             driver.find_element_by_xpath('//*[@id="message_body"]').send_keys(v)
             driver.find_element_by_xpath(
                 '//*[@id="content-wrapper"]/div/div[2]/div[1]/div/div/div/div/div/div/form/div[1]/div[2]/button[1]').click()
-            driver.get_screenshot_as_file("C:\\Users\\bingjiunchen\\Downloads\\snapshot\\response_%s.png" % str(i))
+            time.sleep(0.5)
+            driver.get_screenshot_as_file(os.getenv("SCREENSHOT") + "response_%s.png" % str(i))
             msg = driver.find_elements_by_xpath(
                 '//*[@id="content-wrapper"]/div/div[2]/div[1]/div/div/div/div/div/div/div/div[1]/ul/li[%s]/div[3]' % str(
                     start))
             start = start + 1
             for m in msg:
-                # TODO: write in current excel file
                 response_collect.append(m.text)
 
             if start % 2 == 0:
                 start = start + 1
-        driver.close()  # close current page
-        break
+
+        util.write_xlsx(row_list=response_collect, sheet_name=util.parse_list_name(title), col_name="回答")
+        # driver.close()  # close current page
+        driver.switch_to_previous_tab()
+        driver.back()
+        # break
 
 
 if __name__ == '__main__':
     login_wisdom(os.getenv("WISDOM_ACCOUNT"), os.getenv("WISDOM_PASSWD"))
     run()
+
