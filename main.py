@@ -13,8 +13,7 @@ target_url = os.getenv("WISDOM_URL")
 driver.get(target_url)
 driver.maximize_window()
 
-sheets_list = ['明星3缺1盤點表展開', '滿貫大亨盤點表展開', '金好運盤點表展開']
-# sheets_list = ['明星3缺1盤點表展開']
+sheets_list = ['金好運盤點表展開']
 
 
 def init():
@@ -38,7 +37,7 @@ def run():
         driver.find_element_by_class_name("select2-selection__arrow").click()
         select_lists = driver.find_element_by_class_name("select2-results__options")
         items = select_lists.find_elements_by_tag_name("li")
-        items[idx].click()
+        items[idx + 2].click()
 
         try:
             driver.find_element_by_xpath("//input[@type='submit']").click()
@@ -76,47 +75,59 @@ def run():
                 small_msg = driver.find_element_by_xpath(
                     '//*[@id="content-wrapper"]/div/div[2]/div[1]/div/div/div/div/div/div/div/div[1]/ul/li[%s]/div[3]/small' % str(
                         start)).text
+                print(small_msg)
+                tell_msg = driver.find_element_by_xpath(
+                    '//*[@id="content-wrapper"]/div/div[2]/div[1]/div/div/div/div/div/div/div/div[1]/ul/li[%s]/div[3]/button' % str(
+                        start)).text
+                print(tell_msg)
                 sn_msg = driver.find_element_by_xpath(
                     '//*[@id="content-wrapper"]/div/div[2]/div[1]/div/div/div/div/div/div/div/div[1]/ul/li[%s]/div[3]/a/small' % str(
                         start)).text
+                print(sn_msg)
             except NoSuchElementException:
-                print("element not found %s", v)
+                print("element not found: %s" % v)
 
             start = start + 1
             for t in texts:
                 msg = t.text
                 msg = msg.replace(small_msg, "")
                 msg = msg.replace(sn_msg, "")
+                msg = msg.replace(tell_msg, "")
                 msg = msg.replace("\n", "")
                 response_collect.append(msg)
-                if util.compare_response_with_answer(msg, sheet_name=s, row_name="標準答案"):
-                    try:
-                        #  點讚
-                        driver.find_element_by_xpath(
-                            '//*[@id="content-wrapper"]/div/div[2]/div[1]/div/div/div/div/div/div/div/div[1]/ul/li[%s]/div[3]/div[2]/span[1]' % str(
-                                start)).click()
-                    except NoSuchElementException:
-                        print(v + "cannot find element")
+                if util.compare_response_with_answer(msg, sheet_name=s, row_name="標準答案", row_index=i):
+                    # try:
+                    # # 點讚
+                    # #                         driver.find_element_by_xpath(
+                    # #                             '//*[@id="content-wrapper"]/div/div[2]/div[1]/div/div/div/div/div/div/div/div[1]/ul/li[%s]/div[3]/div[2]/span[1]' % str(
+                    # #                                 start)).click()
+                    #
+                    # except NoSuchElementException:
+                    #     print("cannot be like: %s" % v)
                     compare_result.append("是")
                 else:
                     compare_result.append("否")
 
-            if start % 2 == 0:
-                start = start + 1
-            if count == 10:
-                count = 0  # reset count
+        if start % 2 == 0:
+            start = start + 1
+        if count == 10:
+            count = 0  # reset count
 
-        util.write_xlsx(row_list=response_collect, sheet_name=s, col_name="回答", col_pos="N1")
+    util.write_xlsx(row_list=response_collect, sheet_name=s, col_name="回答", col_pos="N1")
 
-        util.write_xlsx(row_list=compare_result, sheet_name=s, col_name="比較結果", col_pos="O1")
+    util.write_xlsx(row_list=compare_result, sheet_name=s, col_name="比較結果", col_pos="O1")
 
-        # driver.close()  # close current page
-        driver.switch_to_previous_tab()
-        driver.back()
+    # driver.close()  # close current page
+    driver.switch_to_previous_tab()
+    driver.back()
 
 
 if __name__ == '__main__':
     init()
     login_wisdom(os.getenv("WISDOM_ACCOUNT"), os.getenv("WISDOM_PASSWD"))
     run()
+
+    # row = util.read_xlsx(sheet="明星3缺1盤點表展開", row_name="回答")
+    # for i in range(1, 21):
+    #     print(util.compare_response_with_answer(require=row[i], sheet_name="明星3缺1盤點表展開", row_name="標準答案", row_index=i))
 

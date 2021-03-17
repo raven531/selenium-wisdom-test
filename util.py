@@ -1,17 +1,9 @@
 import re
 import pandas as pd
 import xlwings
+from difflib import SequenceMatcher
 
-file_path = "C:\\Users\\bingjiunchen\\Desktop\\明星3缺1_20200311_展開版.xlsx"
-
-
-# ptn = r"-(.+[\d])"
-# table = "盤點表展開"
-#
-#
-# def parse_list_name(list_name):
-#     result = re.search(ptn, list_name)
-#     return result.group(1) + table
+file_path = "C:\\Users\\bingjiunchen\\Desktop\\金好運_20200311_展開版.xlsx"
 
 
 def read_xlsx(sheet: str, row_name):
@@ -27,6 +19,9 @@ def write_xlsx(row_list, sheet_name, col_name, col_pos):
         {col_name: row_list})
 
 
-def compare_response_with_answer(require, sheet_name, row_name):
+def compare_response_with_answer(require, sheet_name, row_name, row_index):
     query = read_xlsx(sheet=sheet_name, row_name=row_name)
-    return query.count(require) > 0
+    fetch = query.pop(row_index)
+    require = re.sub(r'[^\w]', '', require)
+    fetch = re.sub(r'[^\w]', '', fetch)
+    return SequenceMatcher(None, require, fetch).ratio() == 1.0
