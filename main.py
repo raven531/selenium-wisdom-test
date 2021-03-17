@@ -56,6 +56,11 @@ def run():
         response_collect = []
         compare_result = []
 
+        small_msg = ""
+        tell_msg = ""
+        sn_msg = ""
+        texts = []
+
         for i, v in enumerate(row_question):
             count = count + 1
 
@@ -75,19 +80,16 @@ def run():
                 small_msg = driver.find_element_by_xpath(
                     '//*[@id="content-wrapper"]/div/div[2]/div[1]/div/div/div/div/div/div/div/div[1]/ul/li[%s]/div[3]/small' % str(
                         start)).text
-                print(small_msg)
                 tell_msg = driver.find_element_by_xpath(
                     '//*[@id="content-wrapper"]/div/div[2]/div[1]/div/div/div/div/div/div/div/div[1]/ul/li[%s]/div[3]/button' % str(
                         start)).text
-                print(tell_msg)
                 sn_msg = driver.find_element_by_xpath(
                     '//*[@id="content-wrapper"]/div/div[2]/div[1]/div/div/div/div/div/div/div/div[1]/ul/li[%s]/div[3]/a/small' % str(
                         start)).text
-                print(sn_msg)
-            except NoSuchElementException:
-                print("element not found: %s" % v)
 
-            start = start + 1
+            except NoSuchElementException:
+                print("tests or msg not found: %s" % v)
+
             for t in texts:
                 msg = t.text
                 msg = msg.replace(small_msg, "")
@@ -96,22 +98,24 @@ def run():
                 msg = msg.replace("\n", "")
                 response_collect.append(msg)
                 if util.compare_response_with_answer(msg, sheet_name=s, row_name="標準答案", row_index=i):
-                    # try:
-                    # # 點讚
-                    # #                         driver.find_element_by_xpath(
-                    # #                             '//*[@id="content-wrapper"]/div/div[2]/div[1]/div/div/div/div/div/div/div/div[1]/ul/li[%s]/div[3]/div[2]/span[1]' % str(
-                    # #                                 start)).click()
-                    #
-                    # except NoSuchElementException:
-                    #     print("cannot be like: %s" % v)
+                    try:
+                        # 點讚
+                        driver.find_element_by_xpath(
+                            '//*[@id="content-wrapper"]/div/div[2]/div[1]/div/div/div/div/div/div/div/div[1]/ul/li[%s]/div[3]/div/span[1]' % str(
+                                start)).click()
+
+                    except NoSuchElementException:
+                        print("cannot be like: %s" % v)
                     compare_result.append("是")
                 else:
                     compare_result.append("否")
 
-        if start % 2 == 0:
             start = start + 1
-        if count == 10:
-            count = 0  # reset count
+
+            if start % 2 == 0:
+                start = start + 1
+            if count == 10:
+                count = 0  # reset count
 
     util.write_xlsx(row_list=response_collect, sheet_name=s, col_name="回答", col_pos="N1")
 

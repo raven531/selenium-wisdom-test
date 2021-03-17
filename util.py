@@ -3,7 +3,7 @@ import pandas as pd
 import xlwings
 from difflib import SequenceMatcher
 
-file_path = "C:\\Users\\bingjiunchen\\Desktop\\金好運_20200311_展開版.xlsx"
+file_path = "C:\\Users\\d1004\\OneDrive\\Desktop\\金好運_20200311_展開版.xlsx"
 
 
 def read_xlsx(sheet: str, row_name):
@@ -24,4 +24,5 @@ def compare_response_with_answer(require, sheet_name, row_name, row_index):
     fetch = query.pop(row_index)
     require = re.sub(r'[^\w]', '', require)
     fetch = re.sub(r'[^\w]', '', fetch)
+
     return SequenceMatcher(None, require, fetch).ratio() == 1.0
