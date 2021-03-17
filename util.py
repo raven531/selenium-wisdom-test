@@ -27,6 +27,6 @@ def write_xlsx(row_list, sheet_name, col_name, col_pos):
         {col_name: row_list})
 
 
-# TODO
-def compare_response_with_answer(require, sheet_name: str, row_name: str):
-    return
+def compare_response_with_answer(require, sheet_name, row_name):
+    query = read_xlsx(sheet=sheet_name, row_name=row_name)
+    return query.count(require) > 0

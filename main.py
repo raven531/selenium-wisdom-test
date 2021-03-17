@@ -14,6 +14,7 @@ driver.get(target_url)
 driver.maximize_window()
 
 sheets_list = ['明星3缺1盤點表展開', '滿貫大亨盤點表展開', '金好運盤點表展開']
+# sheets_list = ['明星3缺1盤點表展開']
 
 
 def init():
@@ -54,6 +55,7 @@ def run():
         count = 0  # count knowledge number ten for a round
         start = 3  # start with wisdom response
         response_collect = []
+        compare_result = []
 
         for i, v in enumerate(row_question):
             count = count + 1
@@ -65,10 +67,6 @@ def run():
                 '//*[@id="content-wrapper"]/div/div[2]/div[1]/div/div/div/div/div/div/form/div[1]/div[2]/button[1]').click()
 
             driver.get_screenshot_as_file(os.getenv("SCREENSHOT") + "{0}_{1}.png".format(str(row_sn[i]), str(count)))
-            #  點讚
-            #             driver.find_element_by_xpath(
-            #                 '//*[@id="content-wrapper"]/div/div[2]/div[1]/div/div/div/div/div/div/div/div[1]/ul/li[%s]/div[3]/div[2]/span[1]' % str(
-            #                     start)).click()
 
             try:
                 texts = driver.find_elements_by_xpath(
@@ -89,15 +87,29 @@ def run():
                 msg = t.text
                 msg = msg.replace(small_msg, "")
                 msg = msg.replace(sn_msg, "")
-                response_collect.append(msg.replace("\n", ""))
+                msg = msg.replace("\n", "")
+                response_collect.append(msg)
+                if util.compare_response_with_answer(msg, sheet_name=s, row_name="標準答案"):
+                    try:
+                        #  點讚
+                        driver.find_element_by_xpath(
+                            '//*[@id="content-wrapper"]/div/div[2]/div[1]/div/div/div/div/div/div/div/div[1]/ul/li[%s]/div[3]/div[2]/span[1]' % str(
+                                start)).click()
+                    except NoSuchElementException:
+                        print(v + "cannot find element")
+                    compare_result.append("是")
+                else:
+                    compare_result.append("否")
 
             if start % 2 == 0:
                 start = start + 1
             if count == 10:
                 count = 0  # reset count
 
-        util.write_xlsx(row_list=response_collect, sheet_name=s, col_name="回答",
-                        col_pos="N1")
+        util.write_xlsx(row_list=response_collect, sheet_name=s, col_name="回答", col_pos="N1")
+
+        util.write_xlsx(row_list=compare_result, sheet_name=s, col_name="比較結果", col_pos="O1")
+
         # driver.close()  # close current page
         driver.switch_to_previous_tab()
         driver.back()
